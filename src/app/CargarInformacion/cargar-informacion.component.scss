@@ -1,0 +1,84 @@
+.preview-table {
+  max-height: 360px;
+}
+
+.preview-table th,
+.preview-table td {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.manual-value-divider {
+  color: #6c757d;
+  font-size: 0.78rem;
+  margin: 0.4rem 0 0.25rem;
+}
+
+.import-combobox-wrapper {
+  position: relative;
+}
+
+.import-combobox {
+  padding-right: 4.6rem;
+}
+
+.import-combobox-clear {
+  position: absolute;
+  right: 0.25rem;
+  top: 0.2rem;
+  z-index: 3;
+  text-decoration: none;
+}
+
+.import-combobox-menu {
+  background: #ffffff;
+  border: 1px solid #cfd7df;
+  border-radius: 0.25rem;
+  box-shadow: 0 0.45rem 1rem rgba(15, 35, 52, 0.15);
+  left: 0;
+  max-height: 220px;
+  overflow: auto;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.15rem);
+  z-index: 30;
+}
+
+.import-combobox-option {
+  background: transparent;
+  border: 0;
+  display: block;
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  width: 100%;
+
+  &:hover,
+  &:focus {
+    background: #eaf6fb;
+  }
+}
+
+.import-combobox-empty {
+  color: #6c757d;
+  padding: 0.65rem 0.75rem;
+}
+
+.excluded-rows-box {
+  background: #fff8e8;
+  border-top: 1px solid #f0d99b;
+  padding: 0.85rem 1rem;
+}
+
+.import-summary {
+  .summary-number {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .summary-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-top: 0.35rem;
+  }
+}

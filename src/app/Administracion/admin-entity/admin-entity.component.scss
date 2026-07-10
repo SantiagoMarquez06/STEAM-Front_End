@@ -1,0 +1,216 @@
+.widget-icon {
+  font-size: 2rem;
+  opacity: .75;
+}
+
+.card-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.table td,
+.table th {
+  vertical-align: middle;
+}
+
+.badge {
+  font-size: .75rem;
+  padding: .45rem .65rem;
+}
+.admin-summary-card,
+.admin-summary-card .widget-heading,
+.admin-summary-card .widget-subheading,
+.admin-summary-card .widget-numbers {
+  color: #fff !important;
+}
+
+.card.widget-content.admin-summary-card-records {
+  --bs-card-bg: #e45353;
+  background: #e45353 !important;
+  background-color: #e45353 !important;
+  background-image: none !important;
+  border: 1px solid #e45353;
+}
+
+.admin-summary-card-module {
+  border: 1px solid rgba(0, 0, 0, .08);
+}
+
+.admin-search {
+  width: min(560px, 54vw);
+}
+
+.admin-filter-bar {
+  align-items: end;
+  border-top: 1px solid rgba(0, 0, 0, .06);
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  padding: .85rem 1rem;
+}
+
+.admin-pagination-footer {
+  align-items: center;
+  background: #fff;
+  border-top: 1px solid rgba(0, 0, 0, .06);
+  display: flex;
+  justify-content: space-between;
+  padding: .75rem 1rem;
+}
+
+.admin-filter {
+  min-width: 180px;
+  position: relative;
+}
+
+.admin-combobox {
+  font-size: .8rem;
+}
+
+.admin-combobox-menu {
+  background: #fff;
+  border: 1px solid #ced4da;
+  border-radius: .25rem;
+  box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .12);
+  left: 0;
+  margin-top: .25rem;
+  max-height: 220px;
+  overflow-y: auto;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 1050;
+}
+
+.admin-combobox-option {
+  background: transparent;
+  border: 0;
+  display: block;
+  padding: .45rem .75rem;
+  text-align: left;
+  width: 100%;
+}
+
+.admin-combobox-option:hover,
+.admin-combobox-option:focus {
+  background: #e9f4ff;
+}
+
+@media (max-width: 768px) {
+  .card-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .btn-actions-pane-right {
+    flex-wrap: wrap;
+  }
+
+  .admin-search {
+    width: 100%;
+  }
+
+  .admin-filter,
+  .admin-filter-bar .btn {
+    width: 100%;
+  }
+}
+.admin-progress-cell {
+  min-width: 130px;
+}
+
+.admin-master-detail-table {
+  .admin-master-row {
+    cursor: pointer;
+  }
+
+  .admin-master-row:hover {
+    background: #e9f4ff !important;
+  }
+
+  .admin-detail-row > td {
+    background: #fff !important;
+    padding: 0;
+  }
+}
+
+.admin-detail-panel {
+  border-top: 1px solid rgba(0, 0, 0, .06);
+  padding: 1rem;
+}
+
+.admin-detail-title {
+  color: #2f3542;
+  font-weight: 700;
+  margin-bottom: .75rem;
+}
+
+.admin-folder-link {
+  background: #e9f4ff;
+  border: 1px solid rgba(47, 164, 231, .22);
+  border-radius: .35rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+  padding: .65rem .75rem;
+}
+
+.admin-folder-link a {
+  color: #174b7d;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.admin-inline-status {
+  align-items: center;
+  display: inline-flex;
+}
+
+.admin-inline-status .form-select {
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  cursor: pointer;
+  font-size: .75rem;
+  font-weight: 700;
+  min-width: 130px;
+  padding: .35rem 1.75rem .35rem .65rem;
+  text-transform: uppercase;
+}
+
+.admin-inline-status .form-select option {
+  background: #fff;
+  color: #212529;
+  font-weight: 500;
+}
+
+.admin-status-select-success {
+  border-color: rgba(115, 168, 57, .55) !important;
+  border-left: 5px solid #73A839 !important;
+  color: #4d7427 !important;
+}
+
+.admin-status-select-warning {
+  border-color: rgba(221, 86, 0, .55) !important;
+  border-left: 5px solid #DD5600 !important;
+  color: #9a3c00 !important;
+}
+
+.admin-status-select-danger {
+  border-color: rgba(199, 28, 34, .55) !important;
+  border-left: 5px solid #C71C22 !important;
+  color: #9B0E16 !important;
+}
+
+.admin-status-select-muted {
+  border-color: rgba(108, 117, 125, .55) !important;
+  border-left: 5px solid #6c757d !important;
+  color: #495057 !important;
+}
+
+.admin-status-select-primary {
+  border-color: rgba(47, 164, 231, .55) !important;
+  border-left: 5px solid #2FA4E7 !important;
+  color: #174b7d !important;
+}

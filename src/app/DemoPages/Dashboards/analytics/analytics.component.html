@@ -1,0 +1,143 @@
+<app-page-title [heading]="heading" [subheading]="subheading" [icon]="icon"></app-page-title>
+
+<div *ngIf="error" class="alert alert-danger d-flex justify-content-between align-items-center">
+  <span>{{ error }}</span>
+  <button type="button" class="btn btn-outline-danger btn-sm" (click)="loadDashboard()">Reintentar</button>
+</div>
+
+<div *ngIf="loading" class="main-card card mb-3">
+  <div class="card-body text-center text-muted py-5">
+    <span class="spinner-border spinner-border-sm me-2"></span>Cargando indicadores...
+  </div>
+</div>
+
+<ng-container *ngIf="!loading">
+  <div class="row">
+    <div class="col-sm-6 col-xl-3">
+      <a routerLink="/administracion/estudiantes" class="metric-card metric-students">
+        <i class="pe-7s-users"></i>
+        <div>
+          <span>Estudiantes</span>
+          <strong>{{ totalStudents }}</strong>
+        </div>
+      </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <a routerLink="/administracion/proyectos" class="metric-card metric-projects">
+        <i class="pe-7s-portfolio"></i>
+        <div>
+          <span>Proyectos activos</span>
+          <strong>{{ activeProjects }}</strong>
+        </div>
+      </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <a routerLink="/administracion/matriculas-proyecto" class="metric-card metric-enrollments">
+        <i class="pe-7s-note2"></i>
+        <div>
+          <span>Matriculas</span>
+          <strong>{{ totalEnrollments }}</strong>
+        </div>
+      </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+      <a routerLink="/administracion/estudiante-documentos" class="metric-card metric-documents">
+        <i class="pe-7s-file"></i>
+        <div>
+          <span>Documentos pendientes</span>
+          <strong>{{ pendingDocuments }}</strong>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="main-card card mb-3">
+        <div class="card-header d-flex justify-content-between">
+          <span><i class="header-icon pe-7s-graph2"></i>Avance de vinculacion</span>
+          <a routerLink="/administracion/matriculas-proyecto" class="btn btn-outline-primary btn-sm">Ver matriculas</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Estudiante</th>
+                <th>Carrera</th>
+                <th>Proyecto</th>
+                <th>Documentos aprobados</th>
+                <th class="progress-column">Progreso</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of progressRecords | slice:0:8">
+                <td class="fw-semibold">{{ item.student }}</td>
+                <td>{{ item.career }}</td>
+                <td>{{ item.project }}</td>
+                <td>{{ item.approvedDocuments }} / {{ item.totalDocuments }}</td>
+                <td>
+                  <div class="d-flex justify-content-between small mb-1">
+                    <span>{{ item.progress }}%</span>
+                    <span>{{ item.status }}</span>
+                  </div>
+                  <div class="progress">
+                    <div class="progress-bar" [ngClass]="progressClass(item.progress)" [style.width.%]="item.progress"></div>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="progressRecords.length === 0">
+                <td colspan="5" class="text-center text-muted py-4">No existen matriculas para calcular progreso.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="main-card card mb-3">
+        <div class="card-header"><i class="header-icon pe-7s-attention"></i>Indicadores de seguimiento</div>
+        <div class="list-group list-group-flush">
+          <div class="list-group-item indicator-row">
+            <div>
+              <strong>Avance promedio</strong>
+              <small>Entre las matriculas registradas</small>
+            </div>
+            <span class="indicator-value text-primary">{{ averageProgress }}%</span>
+          </div>
+          <div class="list-group-item indicator-row">
+            <div>
+              <strong>Vinculacion completada</strong>
+              <small>Estudiantes con 100% de avance</small>
+            </div>
+            <span class="indicator-value text-success">{{ completedStudents }}</span>
+          </div>
+          <div class="list-group-item indicator-row">
+            <div>
+              <strong>Requieren atencion</strong>
+              <small>Estudiantes con menos del 25%</small>
+            </div>
+            <span class="indicator-value text-danger">{{ studentsAtRisk }}</span>
+          </div>
+          <div class="list-group-item indicator-row">
+            <div>
+              <strong>Documentos pendientes</strong>
+              <small>Entregas pendientes de revision</small>
+            </div>
+            <span class="indicator-value text-warning">{{ pendingDocuments }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-card card mb-3">
+        <div class="card-header"><i class="header-icon pe-7s-link"></i>Accesos principales</div>
+        <div class="card-body quick-links">
+          <a routerLink="/administracion/estudiantes"><i class="pe-7s-users"></i>Estudiantes</a>
+          <a routerLink="/administracion/proyectos"><i class="pe-7s-portfolio"></i>Proyectos</a>
+          <a routerLink="/administracion/matriculas-proyecto"><i class="pe-7s-note2"></i>Matriculas</a>
+          <a routerLink="/administracion/estudiante-documentos"><i class="pe-7s-file"></i>Documentos aprobados</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

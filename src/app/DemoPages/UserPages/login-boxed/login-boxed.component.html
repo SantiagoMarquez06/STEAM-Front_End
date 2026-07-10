@@ -1,0 +1,122 @@
+<div class="vh-100 steam-login-bg">
+  <div class="d-flex h-100 justify-content-center align-items-center p-3">
+    <div class="w-100 app-login-box" style="max-width: 500px;">
+      <div class="steam-login-brand text-center mb-4">
+        STEAM
+      </div>
+
+      <div class="card shadow-lg border-0">
+        <div class="card-body p-4 p-md-5">
+          <div class="text-center mb-4">
+            <h3 class="mb-2 fw-normal">Iniciar sesion</h3>
+            <p class="text-muted mb-0">Accede al panel administrativo de STEAM.</p>
+          </div>
+
+          <form id="loginForm" (ngSubmit)="onSubmit(loginFormRef)" #loginFormRef="ngForm">
+            <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+              {{ errorMessage }}
+            </div>
+
+            <div class="mb-3">
+              <label for="usernameInput" class="form-label visually-hidden">Usuario</label>
+              <input
+                id="usernameInput"
+                type="text"
+                class="form-control form-control-lg"
+                placeholder="Usuario"
+                name="username"
+                ngModel
+                required
+                autocomplete="username">
+            </div>
+
+            <div class="mb-3">
+              <label for="passwordInput" class="form-label visually-hidden">Contrasena</label>
+              <input
+                id="passwordInput"
+                type="password"
+                class="form-control form-control-lg"
+                placeholder="Contrasena"
+                name="password"
+                ngModel
+                required
+                autocomplete="current-password">
+            </div>
+
+          </form>
+        </div>
+
+        <div class="card-footer bg-transparent border-0 p-4 pt-0">
+          <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
+            <a [routerLink]="'/pages/forgot-password-boxed'" class="btn btn-link btn-lg text-decoration-none">
+              Recuperar clave
+            </a>
+            <button type="submit" class="btn btn-primary btn-lg px-4" form="loginForm" [disabled]="loading">
+              <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+              {{ loading ? 'Ingresando...' : 'Entrar al panel' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center text-white mt-4">
+        <p class="mb-0 opacity-75 small">
+          Copyright 2026 - STEAM
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showPasswordChange" class="steam-password-overlay">
+  <div class="card shadow-lg border-0 steam-password-card">
+    <div class="card-body p-4">
+      <div class="text-center mb-4">
+        <h4 class="mb-2">Cambia tu contrasena</h4>
+        <p class="text-muted mb-0">
+          Ingresaste con una clave temporal. Para continuar, registra una nueva contrasena.
+        </p>
+      </div>
+
+      <form id="changePasswordForm" (ngSubmit)="cambiarClave(changePasswordFormRef)" #changePasswordFormRef="ngForm">
+        <div *ngIf="passwordChangeError" class="alert alert-danger" role="alert">
+          {{ passwordChangeError }}
+        </div>
+
+        <div class="mb-3">
+          <label for="newPasswordInput" class="form-label visually-hidden">Nueva contrasena</label>
+          <input
+            id="newPasswordInput"
+            type="password"
+            class="form-control form-control-lg"
+            placeholder="Nueva contrasena"
+            name="nuevaClave"
+            ngModel
+            required
+            minlength="6"
+            autocomplete="new-password">
+          <div class="form-text">Minimo 6 caracteres.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="confirmPasswordInput" class="form-label visually-hidden">Confirmar contrasena</label>
+          <input
+            id="confirmPasswordInput"
+            type="password"
+            class="form-control form-control-lg"
+            placeholder="Confirmar contrasena"
+            name="confirmarClave"
+            ngModel
+            required
+            minlength="6"
+            autocomplete="new-password">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg w-100" [disabled]="changingPassword || changePasswordFormRef.invalid">
+          <span *ngIf="changingPassword" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+          {{ changingPassword ? 'Actualizando...' : 'Guardar nueva contrasena' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

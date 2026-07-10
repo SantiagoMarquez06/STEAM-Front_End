@@ -1,0 +1,13 @@
+<div
+  *ngIf="errorMessage$ | async as error"
+  class="position-fixed top-0 start-50 translate-middle-x p-3"
+  style="z-index: 2000; min-width: min(560px, calc(100vw - 24px));"
+>
+  <div class="alert alert-danger alert-dismissible shadow mb-0" role="alert">
+    <strong>{{ error.title }}</strong>
+    <span class="ms-2">{{ error.message }}</span>
+    <button type="button" class="btn-close" aria-label="Cerrar" (click)="clearError()"></button>
+  </div>
+</div>
+
+<router-outlet></router-outlet>

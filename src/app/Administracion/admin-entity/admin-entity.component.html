@@ -1,0 +1,393 @@
+<ng-container *ngIf="config">
+<app-page-title [heading]="config.title" [subheading]="config.subtitle" [icon]="config.icon"></app-page-title>
+
+<div class="row">
+  <div class="col-md-4 col-xl-3">
+    <div class="card mb-3 widget-content admin-summary-card admin-summary-card-records">
+      <div class="widget-content-wrapper">
+        <div class="widget-content-left">
+          <div class="widget-heading">Registros</div>
+          <div class="widget-subheading">Total actual</div>
+        </div>
+        <div class="widget-content-right">
+          <div class="widget-numbers">{{ totalRecords }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 col-xl-3">
+    <div class="card mb-3 widget-content bg-grow-early admin-summary-card admin-summary-card-module">
+      <div class="widget-content-wrapper">
+        <div class="widget-content-left">
+          <div class="widget-heading">Modulo</div>
+          <div class="widget-subheading">{{ config.title }}</div>
+        </div>
+        <div class="widget-content-right">
+          <i class="pe-7s-server widget-icon"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 col-xl-6 d-flex align-items-start justify-content-md-end">
+    <button type="button" class="btn btn-primary btn-lg" (click)="newRecord()">
+      <i class="fa fa-plus me-2"></i>Nuevo registro
+    </button>
+  </div>
+
+</div>
+
+<div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+  {{ error }}
+  <button type="button" class="btn-close" aria-label="Cerrar" (click)="error = ''"></button>
+</div>
+
+<div *ngIf="success" class="alert alert-success alert-dismissible fade show" role="alert">
+  {{ success }}
+  <button type="button" class="btn-close" aria-label="Cerrar" (click)="success = ''"></button>
+</div>
+
+<div *ngIf="showForm" class="main-card mb-3 card" id="admin-record-form">
+  <div class="card-body">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h5 class="card-title mb-0">{{ editingId ? 'Editar registro' : 'Crear registro' }}</h5>
+      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cancel()">Cancelar</button>
+    </div>
+
+    <form (ngSubmit)="save()">
+      <div class="row">
+        <div *ngFor="let field of config.fields" [class]="field.col || 'col-md-6'" [class.d-none]="!fieldVisible(field)">
+          <div class="position-relative mb-3">
+            <label class="form-label">{{ field.label }}</label>
+            <textarea
+              *ngIf="field.type === 'textarea'; else selectOrInput"
+                class="form-control"
+                rows="3"
+              [name]="field.key"
+              [required]="field.required && fieldVisible(field)"
+              [placeholder]="fieldPlaceholder(field)"
+              [(ngModel)]="formRecord[field.key]"></textarea>
+
+            <ng-template #selectOrInput>
+              <input
+                *ngIf="field.type === 'select'; else normalInput"
+                type="text"
+                class="form-control admin-combobox"
+                autocomplete="off"
+                [name]="'field-search-' + config.key + '-' + field.key"
+                [required]="field.required && fieldVisible(field)"
+                [disabled]="fieldDependsOnMissingValue(field)"
+                [ngModel]="fieldComboText(field)"
+                (ngModelChange)="onFieldComboInput(field, $event)"
+                (focus)="openFieldCombo(field)"
+                (click)="openFieldCombo(field)"
+                (blur)="onFieldComboBlur(field)"
+                [placeholder]="fieldSelectPlaceholder(field)">
+              <div
+                *ngIf="field.type === 'select' && openFieldComboKey === field.key && fieldOptions(field).length > 0"
+                class="admin-combobox-menu">
+                <button
+                  type="button"
+                  class="admin-combobox-option"
+                  *ngFor="let option of fieldOptions(field)"
+                  (mousedown)="selectFieldOption(field, option); $event.preventDefault()">
+                  {{ option.label }}
+                </button>
+              </div>
+              <ng-template #normalInput>
+                <input
+                  class="form-control"
+                  [type]="field.type"
+                  [name]="field.key"
+                  [required]="field.required && fieldVisible(field)"
+                  [placeholder]="fieldPlaceholder(field)"
+                  [(ngModel)]="formRecord[field.key]">
+              </ng-template>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success" [disabled]="saving">
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-2"></span>
+          {{ editingId ? 'Actualizar' : 'Guardar' }}
+        </button>
+        <button type="button" class="btn btn-light" (click)="cancel()" [disabled]="saving">Cerrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="main-card mb-3 card">
+  <div class="card-header">
+    <div>
+      <i class="header-icon pe-7s-display2 icon-gradient bg-plum-plate"></i>
+      Listado de {{ config.title }}
+    </div>
+    <div class="btn-actions-pane-right d-flex align-items-center gap-2">
+      <div class="input-group input-group-sm admin-search">
+        <span class="input-group-text">Buscar</span>
+        <input
+          type="text"
+          class="form-control"
+          [name]="'search-' + config.key"
+          [(ngModel)]="searchText"
+          (ngModelChange)="onSearchTextChange()"
+          [placeholder]="config.searchPlaceholder || 'Buscar registros'">
+        <button type="button" class="btn btn-primary" (click)="onSearchTextChange()" [disabled]="searching || loading">
+          <span *ngIf="searching" class="spinner-border spinner-border-sm me-1"></span>
+          Buscar
+        </button>
+      </div>
+      <button *ngIf="searchActive" type="button" class="btn btn-outline-secondary btn-sm" (click)="clearSearch()" [disabled]="loading">
+        Limpiar
+      </button>
+      <button type="button" class="btn btn-outline-primary btn-sm" (click)="loadRecords(true)" [disabled]="loading || searching">
+        <i class="fa fa-rotate me-1"></i>Actualizar
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="config.filters?.length" class="admin-filter-bar">
+    <button
+      *ngIf="isMatriculasProyectoView()"
+      type="button"
+      class="btn btn-outline-primary btn-sm align-self-end"
+      (click)="toggleMatriculaSortDirection()"
+      [disabled]="loading || searching">
+      <i [class]="matriculaSortDirection === 'ASC' ? 'fa fa-arrow-down-1-9 me-1' : 'fa fa-arrow-up-9-1 me-1'"></i>
+      Orden: {{ matriculaSortLabel() }}
+    </button>
+    <div class="admin-filter" *ngFor="let filter of config.filters">
+      <label class="form-label mb-1">{{ filter.label }}</label>
+      <input
+        *ngIf="filter.type === 'select'; else textFilter"
+        type="text"
+        class="form-control form-control-sm admin-combobox"
+        autocomplete="off"
+        [name]="'filter-search-' + config.key + '-' + filter.key"
+        [ngModel]="filterComboText(filter)"
+        (ngModelChange)="onFilterComboInput(filter, $event)"
+        (focus)="openFilterCombo(filter)"
+        (click)="openFilterCombo(filter)"
+        (blur)="onFilterComboBlur(filter)"
+        [placeholder]="filter.placeholder || filter.label">
+      <div
+        *ngIf="filter.type === 'select' && openFilterComboKey === filter.key && filterOptions(filter).length > 0"
+        class="admin-combobox-menu">
+        <button
+          type="button"
+          class="admin-combobox-option"
+          *ngFor="let option of filterOptions(filter)"
+          (mousedown)="selectFilterOption(filter, option); $event.preventDefault()">
+          {{ option.label }}
+        </button>
+      </div>
+      <ng-template #textFilter>
+        <input
+          type="text"
+          class="form-control form-control-sm"
+          [name]="'filter-' + config.key + '-' + filter.key"
+          [(ngModel)]="filterValues[filter.key]"
+          (ngModelChange)="onFilterChange()"
+          [placeholder]="filter.placeholder || filter.label">
+      </ng-template>
+    </div>
+    <button *ngIf="hasActiveFilters()" type="button" class="btn btn-outline-secondary btn-sm align-self-end" (click)="clearFilters()">
+      Limpiar filtros
+    </button>
+  </div>
+
+  <div class="card-body p-0">
+    <div *ngIf="loading" class="p-4 text-center text-muted">
+      <span class="spinner-border spinner-border-sm me-2"></span>Cargando registros...
+    </div>
+
+    <div *ngIf="!loading && records.length === 0" class="p-4 text-center text-muted">
+      No hay registros para mostrar.
+    </div>
+
+    <div *ngIf="!loading && records.length > 0 && isStudentDocumentsView()" class="table-responsive">
+      <table class="align-middle mb-0 table table-borderless table-striped table-hover admin-master-detail-table">
+        <thead>
+          <tr>
+            <th>Estudiante</th>
+            <th>Cedula</th>
+            <th>Proyecto</th>
+            <th>Periodo</th>
+            <th>Documentos</th>
+            <th>Estado general</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let group of studentDocumentGroupRows">
+            <tr class="admin-master-row" (click)="toggleDocumentGroup(group.key)">
+              <td>{{ group.estudiante }}</td>
+              <td>{{ group.cedula }}</td>
+              <td>{{ group.proyecto }}</td>
+              <td>{{ group.periodo }}</td>
+              <td>
+                <span class="fw-semibold">{{ group.aprobados }}</span> aprobados /
+                <span class="fw-semibold">{{ group.total }}</span> total
+                <div *ngIf="group.pendientes > 0" class="small text-muted">
+                  {{ group.pendientes }} {{ group.pendientes === 1 ? 'documento por revisar' : 'documentos por revisar' }}
+                </div>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="statusClass(group.estado)">
+                  {{ group.estado }}
+                </span>
+              </td>
+              <td class="text-end">
+                <button type="button" class="btn btn-outline-primary btn-sm" (click)="toggleDocumentGroup(group.key); $event.stopPropagation()">
+                  <i [class]="expandedDocumentGroupKey === group.key ? 'fa fa-chevron-up me-1' : 'fa fa-chevron-down me-1'"></i>
+                  {{ expandedDocumentGroupKey === group.key ? 'Ocultar documentos' : 'Ver documentos' }}
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="expandedDocumentGroupKey === group.key" class="admin-detail-row">
+              <td colspan="7">
+                <div class="admin-detail-panel">
+                  <div class="admin-detail-title">
+                    Documentos de {{ group.estudiante }}
+                  </div>
+                  <div class="admin-folder-link mb-3">
+                    <span class="text-muted">Link de carpeta:</span>
+                    <a
+                      *ngIf="isFolderLinkAvailable(group.linkCarpeta); else noFolderLink"
+                      [href]="folderLinkHref(group.linkCarpeta)"
+                      target="_blank"
+                      rel="noopener noreferrer">
+                      {{ linkDisplayLabel('Link de carpeta') }}
+                    </a>
+                    <ng-template #noFolderLink>
+                      <span class="text-muted">Sin link registrado</span>
+                    </ng-template>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Documento</th>
+                          <th>Proyecto</th>
+                          <th>Fecha</th>
+                          <th>Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let record of documentGroupRecords(group.key); let documentIndex = index">
+                          <td>{{ documentIndex + 1 }}</td>
+                          <td>{{ valueOf(record, 'documento.nombreDocumento') || '-' }}</td>
+                          <td>{{ valueOf(record, 'matriculaProyecto.proyecto.nombreProyecto') || '-' }}</td>
+                          <td>{{ valueOf(record, 'fechaAutorizacion') || '-' }}</td>
+                          <td>
+                            <div class="admin-inline-status">
+                              <select
+                                class="form-select form-select-sm"
+                                [ngClass]="statusSelectClass(valueOf(record, 'estadoEstudianteDocumento'))"
+                                [disabled]="isChangingStatus(record)"
+                                [ngModel]="valueOf(record, 'estadoEstudianteDocumento')"
+                                (ngModelChange)="updateStudentDocumentStatus(record, $event)"
+                                [name]="'estado-documento-' + valueOf(record, 'idEstudianteDocumento')">
+                                <option *ngFor="let option of documentStatusOptions()" [value]="option.value">
+                                  {{ option.label }}
+                                </option>
+                              </select>
+                              <span *ngIf="isChangingStatus(record)" class="spinner-border spinner-border-sm ms-2"></span>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="!loading && records.length > 0 && !isStudentDocumentsView()" class="table-responsive">
+      <table class="align-middle mb-0 table table-borderless table-striped table-hover">
+        <thead>
+          <tr>
+            <th *ngFor="let column of config.columns">{{ column.label }}</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of records; let rowIndex = index">
+            <td *ngFor="let column of config.columns">
+              <div *ngIf="column.key === 'progresoVinculacion'; else statusOrText" class="admin-progress-cell">
+                <div class="d-flex justify-content-between small mb-1">
+                  <span>{{ progressDetail(record) }}</span>
+                  <strong>{{ progressPercent(record) }}%</strong>
+                </div>
+                <div class="progress" style="height: 8px;">
+                  <div
+                    class="progress-bar bg-success"
+                    role="progressbar"
+                    [style.width.%]="progressPercent(record)"
+                    [attr.aria-valuenow]="progressPercent(record)"
+                    aria-valuemin="0"
+                    aria-valuemax="100">
+                  </div>
+                </div>
+              </div>
+              <ng-template #statusOrText>
+                <span *ngIf="isStatusColumn(column); else textCell"
+                    class="badge"
+                    [ngClass]="statusClass(valueOf(record, column.key))">
+                  {{ displayValue(record, column, rowIndex) || 'Sin estado' }}
+                </span>
+                <ng-template #textCell>
+                  <ng-container *ngIf="isLinkColumn(column) && isLinkAvailable(displayValue(record, column, rowIndex)); else plainTextCell">
+                    <a
+                      [href]="linkHref(displayValue(record, column, rowIndex))"
+                      target="_blank"
+                      rel="noopener noreferrer">
+                      {{ linkDisplayLabel(column) }}
+                    </a>
+                  </ng-container>
+                  <ng-template #plainTextCell>
+                    {{ displayValue(record, column, rowIndex) || '-' }}
+                  </ng-template>
+                </ng-template>
+              </ng-template>
+            </td>
+            <td class="text-end">
+              <button type="button" class="btn btn-primary btn-sm me-2" (click)="editRecord(record)">
+                <i class="fa fa-pen me-1"></i>Editar
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger btn-sm"
+                (click)="deleteRecord(record)"
+                [disabled]="isDeleting(record)">
+                <span *ngIf="isDeleting(record)" class="spinner-border spinner-border-sm me-1"></span>
+                <i *ngIf="!isDeleting(record)" class="fa fa-trash me-1"></i>Eliminar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div *ngIf="!loading && totalPages > 1" class="card-footer admin-pagination-footer">
+    <div class="text-muted small">
+      Pagina {{ page + 1 }} de {{ totalPages }} - Mostrando {{ records.length }} registros
+    </div>
+    <div class="btn-group">
+      <button type="button" class="btn btn-outline-primary btn-sm" (click)="goToPage(page - 1)" [disabled]="page === 0">
+        Anterior
+      </button>
+      <button type="button" class="btn btn-outline-primary btn-sm" (click)="goToPage(page + 1)" [disabled]="page + 1 >= totalPages">
+        Siguiente
+      </button>
+    </div>
+  </div>
+</div>
+</ng-container>

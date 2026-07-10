@@ -1,0 +1,27 @@
+<div class="header-btn-lg d-flex align-items-center">
+  <div class="widget-content-left me-2">
+    <div class="widget-heading">{{ user.nombre }}</div>
+    <div class="widget-subheading">{{ user.correo || user.username }}</div>
+  </div>
+  <div ngbDropdown placement="bottom-right">
+    <button type="button" class="btn btn-link p-0" ngbDropdownToggle>
+      <span class="steam-profile-icon" aria-label="Perfil">
+        <i class="fa-regular fa-circle-user"></i>
+      </span>
+    </button>
+    <div ngbDropdownMenu class="dropdown-menu-sm">
+      <div class="dropdown-header text-center">
+        <div class="steam-profile-icon steam-profile-icon-lg" aria-hidden="true">
+          <i class="fa-regular fa-circle-user"></i>
+        </div>
+        <h6 class="mb-0">{{ user.nombre }}</h6>
+        <small class="text-muted">{{ user.correo || user.username }}</small>
+      </div>
+      <div class="dropdown-divider"></div>
+      <button type="button" class="dropdown-item text-danger" (click)="logout()">
+        <i class="pe-7s-power me-2"></i>
+        Cerrar sesion
+      </button>
+    </div>
+  </div>
+</div>

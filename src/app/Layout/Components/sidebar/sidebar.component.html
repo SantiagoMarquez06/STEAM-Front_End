@@ -1,0 +1,68 @@
+<div [class]="'app-sidebar sidebar-shadow ' + (config$ | async)?.sidebarTheme" 
+     (mouseenter)="onSidebarMouseEnter()"
+     (mouseleave)="onSidebarMouseLeave()">
+  <div class="app-header__logo">
+    <div class="logo-src">
+      <span class="logo-text">
+        <span class="logo-full steam-logo">STEAM</span>
+        <span class="logo-collapsed steam-logo">S</span>
+      </span>
+    </div>
+  </div>
+  <div class="app-sidebar-content">
+    <div class="app-sidebar-scroll">
+      <div class="sidebar-scrollbar">
+        <div class="v-sidebar-menu vsm-default">
+          <div class="vsm-list">
+            <div class="vsm-header">Navegacion</div>
+            
+            <div class="vsm-item" [class.vsm-active]="extraParameter === 'dashboardsMenu'">
+              <a routerLink="/dashboards/analytics" routerLinkActive="active-item" class="vsm-link" (click)="onNavigate()">
+                <i class="vsm-icon pe-7s-rocket"></i>
+                <span class="vsm-title">Dashboard</span>
+              </a>
+            </div>
+
+            <div class="vsm-header">Modulos</div>
+
+            <div class="vsm-item" [class.vsm-active]="extraParameter === 'reportesMenu'">
+              <a routerLink="/reportes" routerLinkActive="active-item" class="vsm-link" (click)="onNavigate()">
+                <i class="vsm-icon pe-7s-note2"></i>
+                <span class="vsm-title">Reportes</span>
+              </a>
+            </div>
+
+            <div class="vsm-item" [class.vsm-active]="extraParameter === 'cargarInformacionMenu'">
+              <a routerLink="/cargar-informacion" routerLinkActive="active-item" class="vsm-link" (click)="onNavigate()">
+                <i class="vsm-icon pe-7s-cloud-upload"></i>
+                <span class="vsm-title">Cargar informacion</span>
+              </a>
+            </div>
+
+            <div
+              class="vsm-item has-sub"
+              *ngFor="let group of adminMenuGroups"
+              [class.vsm-open]="openMenus.includes(group.id)"
+              [class.vsm-active]="isAdminGroupActive(group)">
+              <a href="javascript:void(0);" class="vsm-link" (click)="toggleSubmenu(group.id)">
+                <i [class]="'vsm-icon ' + group.icon"></i>
+                <span class="vsm-title">{{ group.title }}</span>
+                <i class="vsm-arrow"></i>
+              </a>
+              <div class="vsm-dropdown" [class.vsm-dropdown-show]="openMenus.includes(group.id)">
+                <div class="vsm-list">
+                  <div class="vsm-item" *ngFor="let item of group.items">
+                    <a [routerLink]="item.path" routerLinkActive="active-item" class="vsm-link" (click)="onNavigate()">
+                      <span class="vsm-title">{{ item.title }}</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

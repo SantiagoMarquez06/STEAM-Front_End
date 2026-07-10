@@ -1,0 +1,75 @@
+.metric-card {
+  align-items: center;
+  color: #111827;
+  display: flex;
+  gap: 16px;
+  min-height: 104px;
+  margin-bottom: 16px;
+  padding: 18px;
+  text-decoration: none;
+  border: 1px solid #dfe3ea;
+  border-left-width: 5px;
+  background: #fff;
+}
+
+.metric-card:hover {
+  box-shadow: 0 5px 16px rgba(30, 45, 70, 0.1);
+}
+
+.metric-card i {
+  font-size: 34px;
+}
+
+.metric-card span,
+.indicator-row small {
+  color: #667085;
+  display: block;
+}
+
+.metric-card strong {
+  display: block;
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.metric-students { border-left-color: #2563eb; }
+.metric-projects { border-left-color: #16a34a; }
+.metric-enrollments { border-left-color: #7c3aed; }
+.metric-documents { border-left-color: #e59b16; }
+
+.progress-column {
+  min-width: 190px;
+}
+
+.progress {
+  height: 8px;
+}
+
+.indicator-row {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  min-height: 82px;
+}
+
+.indicator-value {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.quick-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.quick-links a {
+  border: 1px solid #dfe3ea;
+  color: #174b7d;
+  padding: 12px;
+  text-decoration: none;
+}
+
+.quick-links i {
+  margin-right: 8px;
+}

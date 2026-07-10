@@ -1,0 +1,266 @@
+<app-page-title [heading]="heading" [subheading]="subheading" [icon]="icon"></app-page-title>
+
+<div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+  {{ error }}
+  <button type="button" class="btn-close" aria-label="Cerrar" (click)="error = ''"></button>
+</div>
+
+<div *ngIf="success" class="alert alert-success alert-dismissible fade show" role="alert">
+  {{ success }}
+  <button type="button" class="btn-close" aria-label="Cerrar" (click)="success = ''"></button>
+</div>
+
+<div class="main-card mb-3 card">
+  <div class="card-header">
+    <i class="header-icon pe-7s-upload icon-gradient bg-grow-early"></i>
+    1. Selecciona el archivo
+  </div>
+  <div class="card-body">
+    <p class="text-muted">
+      Puedes subir un Excel aunque sus encabezados no sean exactos. El sistema intentara detectar las columnas y luego podras corregir el mapeo antes de guardar.
+    </p>
+
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Modulo / tabla destino</label>
+        <select class="form-select" [(ngModel)]="source" (ngModelChange)="onSourceChange()">
+          <option *ngFor="let item of sources" [value]="item.key">{{ item.label }}</option>
+        </select>
+        <div class="form-text">{{ selectedSource().description }}</div>
+      </div>
+
+      <div class="col-md-5 mb-3">
+        <label class="form-label">Archivo Excel</label>
+        <input #excelInput type="file" class="form-control" accept=".xlsx" (change)="onFileChange($event)">
+        <div class="form-text">Formato permitido: .xlsx</div>
+      </div>
+
+      <div class="col-md-3 mb-3 d-flex align-items-end">
+        <button
+          type="button"
+          class="btn btn-primary w-100"
+          (click)="previsualizar()"
+          [disabled]="loadingPreview || importing || !file">
+          <span *ngIf="loadingPreview" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!loadingPreview" class="fa fa-search me-2"></i>
+          Previsualizar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="preview" class="main-card mb-3 card">
+  <div class="card-header">
+    <i class="header-icon pe-7s-way icon-gradient bg-mean-fruit"></i>
+    2. Comprueba y relaciona la informacion
+  </div>
+  <div class="card-body">
+    <p class="text-muted mb-3">
+      En esta seccion estas conectando los <strong>campos que necesita guardar el sistema en la base de datos</strong>
+      con las <strong>columnas encontradas en tu archivo Excel</strong>. Cada etiqueta de arriba representa un campo del sistema
+      para el modulo <strong>{{ selectedSource().label }}</strong>
+      <span *ngIf="exampleFieldLabels()">, por ejemplo: <strong>{{ exampleFieldLabels() }}</strong></span>.
+      El combobox debajo muestra las columnas reales detectadas en el Excel para que escojas de donde saldra ese dato.
+    </p>
+
+    <div class="d-flex flex-wrap gap-3 mb-3">
+      <div *ngIf="preview.hoja" class="badge bg-light text-dark border p-2">Hoja detectada: {{ preview.hoja }}</div>
+      <div *ngIf="preview.filaEncabezado" class="badge bg-light text-dark border p-2">Encabezados en fila: {{ preview.filaEncabezado }}</div>
+      <div class="badge bg-light text-dark border p-2">Filas detectadas: {{ preview.filasLeidas }}</div>
+      <div class="badge bg-light text-dark border p-2">Columnas detectadas: {{ preview.encabezados.length }}</div>
+      <div class="badge bg-light text-dark border p-2">Campos obligatorios: {{ preview.camposObligatorios.length }}</div>
+      <div *ngIf="identifierLabel()" class="badge bg-light text-dark border p-2">Cada fila se identifica por: {{ identifierLabel() }}</div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4 mb-3" *ngFor="let field of preview.campos">
+        <label class="form-label">
+          {{ fieldLabel(field) }}
+          <span *ngIf="isRequired(field)" class="text-danger">*</span>
+        </label>
+        <select class="form-select" [(ngModel)]="mapping[field]" [disabled]="!!manualValue(field)">
+          <option value="">No importar / sin relacion</option>
+          <option *ngFor="let header of preview.encabezados" [value]="header">
+            {{ header }}
+          </option>
+        </select>
+        <ng-container *ngIf="isSystemValueField(field); else freeManualValue">
+          <div class="manual-value-divider">o selecciona un valor existente del sistema para todas las filas</div>
+          <div class="import-combobox-wrapper">
+            <input
+              type="text"
+              class="form-control import-combobox"
+              [placeholder]="'Buscar ' + fieldLabel(field)"
+              [ngModel]="systemComboText(field)"
+              (ngModelChange)="onSystemValueInput(field, $event)"
+              (focus)="onSystemValueFocus(field)"
+              (blur)="onSystemValueBlur(field)">
+            <button
+              *ngIf="manualValue(field)"
+              type="button"
+              class="btn btn-link btn-sm import-combobox-clear"
+              (mousedown)="clearSystemValue(field); $event.preventDefault()">
+              Limpiar
+            </button>
+            <div *ngIf="activeSystemField === field" class="import-combobox-menu">
+              <button
+                type="button"
+                class="import-combobox-option"
+                *ngFor="let option of filteredSystemOptions(field)"
+                (mousedown)="selectSystemValue(field, option); $event.preventDefault()">
+                {{ option.label }}
+              </button>
+              <div *ngIf="filteredSystemOptions(field).length === 0" class="import-combobox-empty">
+                No hay coincidencias en la base de datos.
+              </div>
+            </div>
+          </div>
+          <div *ngIf="manualValue(field)" class="form-text text-primary">
+            Se usara este registro existente en todas las filas importadas.
+          </div>
+        </ng-container>
+
+        <ng-template #freeManualValue>
+          <div class="manual-value-divider">o escribe un valor manual para todas las filas</div>
+          <input
+            type="text"
+            class="form-control"
+            [placeholder]="'Valor manual de ' + fieldLabel(field)"
+            [(ngModel)]="manualValues[field]"
+            (ngModelChange)="clearMappingIfManual(field)">
+          <div *ngIf="manualValue(field)" class="form-text text-primary">
+            Se usara este valor en todas las filas importadas.
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
+    <div class="alert alert-info mb-0">
+      Los campos marcados con <span class="text-danger fw-bold">*</span> son obligatorios para crear o actualizar registros.
+      Si el sistema no detecta una columna, puedes completar el dato para todas las filas.
+      Los campos relacionados con catalogos usan registros existentes de la base de datos para evitar conflictos.
+      Si un campo no aplica para tu archivo, puedes dejarlo vacio siempre que no sea obligatorio.
+    </div>
+  </div>
+</div>
+
+<div *ngIf="preview" class="main-card mb-3 card">
+  <div class="card-header">
+    <i class="header-icon pe-7s-look icon-gradient bg-happy-itmeo"></i>
+    Vista previa de datos cargados
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive preview-table">
+      <table class="table table-striped table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Fila Excel</th>
+            <th *ngFor="let header of mappedPreviewHeaders()">{{ header }}</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of pagedPreviewRows()">
+            <td>{{ row['__excelRow'] }}</td>
+            <td *ngFor="let header of mappedPreviewHeaders()">{{ row[header] || '-' }}</td>
+            <td class="text-end">
+              <button type="button" class="btn btn-outline-danger btn-sm" (click)="excludeRow(row)">
+                No importar
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="mappedPreviewHeaders().length === 0">
+            <td class="text-center text-muted py-4" colspan="99">
+              Selecciona al menos una relacion en los combobox para ver como quedara la informacion.
+            </td>
+          </tr>
+          <tr *ngIf="mappedPreviewHeaders().length > 0 && pagedPreviewRows().length === 0">
+            <td class="text-center text-muted py-4" colspan="99">
+              No quedan filas activas para mostrar. Puedes restaurar filas descartadas abajo.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="excludedRows.size > 0" class="excluded-rows-box">
+      <div class="fw-bold mb-2">Filas que no se importaran: {{ excludedRows.size }}</div>
+      <button
+        type="button"
+        class="btn btn-outline-secondary btn-sm me-2 mb-2"
+        *ngFor="let row of excludedPreviewRows()"
+        (click)="restoreRow(excelRowNumber(row))">
+        Restaurar fila {{ excelRowNumber(row) }}
+      </button>
+    </div>
+  </div>
+  <div class="card-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div class="text-muted small">
+      Mostrando {{ previewRangeLabel() }}
+      <span *ngIf="excludedRows.size > 0"> · {{ excludedRows.size }} filas descartadas</span>
+    </div>
+    <div class="btn-group btn-group-sm" *ngIf="mappedPreviewRows().length > previewPageSize">
+      <button type="button" class="btn btn-outline-primary" (click)="goPreviewPage(-1)" [disabled]="previewPage <= 1">
+        Anterior
+      </button>
+      <button type="button" class="btn btn-outline-primary" disabled>
+        Pagina {{ previewPage }} de {{ previewTotalPages() }}
+      </button>
+      <button type="button" class="btn btn-outline-primary" (click)="goPreviewPage(1)" [disabled]="previewPage >= previewTotalPages()">
+        Siguiente
+      </button>
+    </div>
+    <button
+      type="button"
+      class="btn btn-success"
+      (click)="importar()"
+      [disabled]="importing || loadingPreview">
+      <span *ngIf="importing" class="spinner-border spinner-border-sm me-2"></span>
+      <i *ngIf="!importing" class="fa fa-upload me-2"></i>
+      Confirmar e importar
+    </button>
+  </div>
+</div>
+
+<div *ngIf="result" class="main-card mb-3 card">
+  <div class="card-header">
+    <i class="header-icon pe-7s-check icon-gradient bg-grow-early"></i>
+    Resultado de importacion
+  </div>
+  <div class="card-body">
+    <div class="row text-center import-summary">
+      <div class="col-md-3">
+        <div class="summary-number">{{ result.filasLeidas }}</div>
+        <div class="summary-label">Filas leidas</div>
+      </div>
+      <div class="col-md-3">
+        <div class="summary-number text-success">{{ result.creados }}</div>
+        <div class="summary-label">Creados</div>
+      </div>
+      <div class="col-md-3">
+        <div class="summary-number text-primary">{{ result.actualizados }}</div>
+        <div class="summary-label">Actualizados</div>
+      </div>
+      <div class="col-md-3">
+        <div class="summary-number text-danger">{{ result.errores }}</div>
+        <div class="summary-label">Errores</div>
+      </div>
+    </div>
+
+    <div *ngIf="result.detalles?.length" class="alert alert-warning mt-3 mb-0">
+      <div class="fw-bold mb-2">Filas con observaciones</div>
+      <ul class="mb-0">
+        <li *ngFor="let detalle of result.detalles.slice(0, 15)">{{ detalle }}</li>
+      </ul>
+      <div *ngIf="result.detalles.length > 15" class="small mt-2">
+        Se muestran los primeros 15 errores de {{ result.detalles.length }}.
+      </div>
+    </div>
+  </div>
+  <div class="card-footer d-flex justify-content-end">
+    <button type="button" class="btn btn-primary" (click)="cargarOtroExcel()">
+      <i class="fa fa-plus me-2"></i>
+      Cargar otro Excel
+    </button>
+  </div>
+</div>

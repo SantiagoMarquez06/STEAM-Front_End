@@ -1,0 +1,107 @@
+<app-page-title [heading]="heading" [subheading]="subheading" [icon]="icon"></app-page-title>
+
+<div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+  {{ error }}
+  <button type="button" class="btn-close" aria-label="Cerrar" (click)="error = ''"></button>
+</div>
+
+<div *ngIf="success" class="alert alert-success alert-dismissible fade show" role="alert">
+  {{ success }}
+  <button type="button" class="btn-close" aria-label="Cerrar" (click)="success = ''"></button>
+</div>
+
+<div class="row">
+  <div class="col-md-6 col-xl-4" *ngFor="let reporte of reports">
+    <div class="card mb-3 report-card">
+      <div class="card-body">
+        <div class="d-flex align-items-start gap-3">
+          <div class="report-icon">
+            <i [class]="reporte.icon"></i>
+          </div>
+          <div class="flex-grow-1">
+            <h5 class="card-title mb-2">{{ reporte.title }}</h5>
+            <p class="text-muted mb-2">{{ reporte.description }}</p>
+            <div class="small text-primary mb-3">{{ reporte.suggestedUse }}</div>
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="descargar(reporte)"
+              [disabled]="downloadingKey && !isDownloading(reporte)">
+              <span *ngIf="isDownloading(reporte)" class="spinner-border spinner-border-sm me-2"></span>
+              <i *ngIf="!isDownloading(reporte)" class="fa fa-download me-2"></i>
+              Descargar Excel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main-card mb-3 card custom-report-card">
+  <div class="card-header">
+    <i class="header-icon pe-7s-tools icon-gradient bg-mean-fruit"></i>
+    Reporte personalizado
+  </div>
+  <div class="card-body">
+    <p class="text-muted">
+      Si ninguno de los reportes pre-generados te sirve, arma uno escogiendo el origen de datos y las columnas que quieres exportar.
+    </p>
+
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Origen de datos</label>
+        <select
+          class="form-select"
+          name="customSource"
+          [(ngModel)]="customSource"
+          (ngModelChange)="onCustomSourceChange()">
+          <option *ngFor="let source of customSources" [value]="source.key">
+            {{ source.label }}
+          </option>
+        </select>
+        <div class="form-text">{{ selectedSource().description }}</div>
+      </div>
+
+      <div class="col-md-8 mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <label class="form-label mb-0">Columnas del Excel</label>
+          <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-outline-primary" (click)="toggleAllCustomColumns(true)">
+              Marcar todo
+            </button>
+            <button type="button" class="btn btn-outline-secondary" (click)="toggleAllCustomColumns(false)">
+              Limpiar
+            </button>
+          </div>
+        </div>
+
+        <div class="custom-columns">
+          <label class="custom-column-option" *ngFor="let column of selectedSource().columns">
+            <input
+              type="checkbox"
+              class="form-check-input me-2"
+              [name]="'custom-column-' + column.key"
+              [(ngModel)]="customColumns[column.key]">
+            <span>{{ column.label }}</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div class="text-muted small">
+        Columnas seleccionadas: {{ selectedCustomColumns().length }}
+      </div>
+      <button
+        type="button"
+        class="btn btn-success"
+        (click)="descargarPersonalizado()"
+        [disabled]="isDownloadingCustom() || selectedCustomColumns().length === 0">
+        <span *ngIf="isDownloadingCustom()" class="spinner-border spinner-border-sm me-2"></span>
+        <i *ngIf="!isDownloadingCustom()" class="fa fa-file-excel me-2"></i>
+        Descargar reporte personalizado
+      </button>
+    </div>
+  </div>
+</div>
