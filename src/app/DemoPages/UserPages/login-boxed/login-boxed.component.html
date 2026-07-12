@@ -47,10 +47,7 @@
         </div>
 
         <div class="card-footer bg-transparent border-0 p-4 pt-0">
-          <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
-            <a [routerLink]="'/pages/forgot-password-boxed'" class="btn btn-link btn-lg text-decoration-none">
-              Recuperar clave
-            </a>
+          <div class="d-flex flex-column flex-sm-row justify-content-end gap-2">
             <button type="submit" class="btn btn-primary btn-lg px-4" form="loginForm" [disabled]="loading">
               <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
               {{ loading ? 'Ingresando...' : 'Entrar al panel' }}
