@@ -89,7 +89,7 @@ export class LoginBoxedComponent implements OnDestroy {
 
     this.authService.login(username, password)
       .pipe(
-        timeout(20000),
+        timeout(70000),
         finalize(() => {
           this.loading = false;
           this.refreshView();
@@ -106,7 +106,7 @@ export class LoginBoxedComponent implements OnDestroy {
       },
       error: (error) => {
         this.errorMessage = error?.name === 'TimeoutError'
-          ? 'El inicio de sesion tardo demasiado. Revisa si el backend esta respondiendo.'
+          ? 'El inicio de sesion tardo demasiado. Si el backend esta en Render Free, espera unos segundos y vuelve a intentar.'
           : error?.error?.message || 'No se pudo iniciar sesion. Revisa tus credenciales.';
         this.refreshView();
       }
@@ -143,7 +143,7 @@ export class LoginBoxedComponent implements OnDestroy {
 
     this.authService.cambiarClave(nuevaClave.trim())
       .pipe(
-        timeout(20000),
+        timeout(70000),
         finalize(() => {
           this.changingPassword = false;
           this.refreshView();
